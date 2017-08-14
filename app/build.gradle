@@ -20,40 +20,44 @@ android {
     //定义渠道包签名文件
     signingConfigs {
         test {
-            keyAlias 'test'
-            keyPassword 'test123'
-            storeFile file('../resources/test.jks')
-            storePassword 'test123'
+            storeFile file('../resources/test.jks')//密钥文件位置
+            storePassword 'test123'//密钥密码
+            keyAlias 'test'//密钥别名
+            keyPassword 'test123'//别名密码
         }
         test1 {
-            keyAlias 'test'
-            keyPassword 'test123'
             storeFile file('../resources/test1.jks')
             storePassword 'test123'
-        }
-        test2 {
             keyAlias 'test'
             keyPassword 'test123'
+        }
+        test2 {
             storeFile file('../resources/test2.jks')
             storePassword 'test123'
+            keyAlias 'test'
+            keyPassword 'test123'
         }
     }
 
     buildTypes {
         debug {
-            versionNameSuffix "-debug"
+            minifyEnabled false
+            shrinkResources false
+            zipAlignEnabled true
+            versionNameSuffix "-debug"//版本命名后缀
             buildConfigField "boolean", "LOG_DEBUG", "true"
-            //定义debug时使用
+            //定义debug时使用的签名文件
             signingConfig signingConfigs.test
             signingConfig signingConfigs.test1
             signingConfig signingConfigs.test2
         }
 
         release {
-            minifyEnabled true
-            multiDexEnabled true
-            zipAlignEnabled true
-            shrinkResources true
+            minifyEnabled true//是否开启代码混淆
+            shrinkResources true//移除无用的资源文件，依赖于minifyEnabled必须一起用
+            multiDexEnabled true//解决65535
+            zipAlignEnabled true//对齐zip
+            debuggable false // 是否debug
             buildConfigField "boolean", "LOG_DEBUG", "false"
             signingConfig signingConfigs.test
             signingConfig signingConfigs.test1
@@ -80,7 +84,7 @@ android {
             applicationId "com.jeanboy.app.flavors"
             versionCode rootProject.ext.mainTestVersionCode
             versionName rootProject.ext.mainTestVersionName
-            //定义manifest中替换值
+            //定义manifest中替换值，如：渠道号
             resValue("string", "test_app_id", "2017-8-14 12:09:35")
             //定义混淆文件
             proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test/proguard-rules.pro'
@@ -100,6 +104,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test2/proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
