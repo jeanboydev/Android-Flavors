@@ -6,7 +6,7 @@
 
 以友盟 SDK 为例，打包多渠道：GooglePlay，小米，友盟，360，豌豆荚，应用宝。 在 AndroidManifest.xml 中加入渠道区分标识。
 
-````Xml
+````XML
 <meta-data 
     android:name="UMENG_CHANNEL"
     android:value="${UMENG_CHANNEL_VALUE}" />
