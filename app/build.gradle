@@ -1,20 +1,103 @@
 apply plugin: 'com.android.application'
+//定义打包时间
+static def releaseTime() {
+    return new Date().format("yyyyMMddHHmmss", TimeZone.getTimeZone("UTC"))
+}
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
-        applicationId "com.jeanboy.app.flavors"
-        minSdkVersion 15
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        applicationId getApplicationId()
+        versionCode getVersionCode()
+        versionName getVersionName()
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true//解决65535
     }
+
+    //定义渠道包签名文件
+    signingConfigs {
+        test {
+            keyAlias 'test'
+            keyPassword 'test123'
+            storeFile file('../resources/test.jks')
+            storePassword 'test123'
+        }
+        test1 {
+            keyAlias 'test'
+            keyPassword 'test123'
+            storeFile file('../resources/test1.jks')
+            storePassword 'test123'
+        }
+        test2 {
+            keyAlias 'test'
+            keyPassword 'test123'
+            storeFile file('../resources/test2.jks')
+            storePassword 'test123'
+        }
+    }
+
     buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            //定义debug时使用
+            signingConfig signingConfigs.test
+            signingConfig signingConfigs.test1
+            signingConfig signingConfigs.test2
+        }
+
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            multiDexEnabled true
+            zipAlignEnabled true
+            shrinkResources true
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            signingConfig signingConfigs.test
+            signingConfig signingConfigs.test1
+            signingConfig signingConfigs.test2
+        }
+    }
+
+    //打包重命名
+    applicationVariants.all { variant ->
+        if (variant.buildType.name == "release") {
+            variant.outputs.each { output ->
+                def filePath = output.outputFile.parent + "/${variant.buildType.name}"
+                def fileName = output.outputFile.name
+                if (fileName.endsWith(".apk")) {
+                    def apkName = "${variant.productFlavors[0].name}-v${variant.versionName}-${releaseTime()}.apk";
+                    output.outputFile = new File(filePath, apkName)
+                }
+            }
+        }
+    }
+    //定义渠道
+    productFlavors {
+        main_test {
+            applicationId "com.jeanboy.app.flavors"
+            versionCode rootProject.ext.mainTestVersionCode
+            versionName rootProject.ext.mainTestVersionName
+            //定义manifest中替换值
+            resValue("string", "test_app_id", "2017-8-14 12:09:35")
+            //定义混淆文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test/proguard-rules.pro'
+        }
+        main_test1 {
+            applicationId "com.jeanboy.app.flavorstest1"
+            versionCode rootProject.ext.mainTest1VersionCode
+            versionName rootProject.ext.mainTest1VersionName
+            resValue("string", "test_app_id", "2017-8-14 12:09:35")
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test1/proguard-rules.pro'
+        }
+        main_test2 {
+            applicationId "com.jeanboy.app.flavorstest2"
+            versionCode rootProject.ext.mainTest2VersionCode
+            versionName rootProject.ext.mainTest2VersionName
+            resValue("string", "test_app_id", "2017-8-14 12:09:35")
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test2/proguard-rules.pro'
         }
     }
 }
@@ -24,7 +107,8 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    testCompile "junit:junit:$rootProject.junitVersion"
+    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:multidex:1.0.1'//解决65535
 }
