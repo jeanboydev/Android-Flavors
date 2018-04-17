@@ -1,6 +1,6 @@
 # Android-Flavors
 ## 概述
-该项目演示了在 Android Studio 中使用 gradle 构建渠道包。
+该项目演示了在 Android Studio 中使用 gradle 构建渠道包。已更新支持 Android Studio 3.x，Gradle 4.x。
 
 ## 渠道号
 
@@ -36,22 +36,21 @@ productFlavors.all {
 
 我们可以指定不同渠道号生成的 apk 的名字，这样方便打包出来区别哪个 apk 是对应哪个渠道的。
 
-如下命名格式为：** 渠道名-v版本号-打包时间.apk **
+如下命名格式为：**渠道名-v版本号-打包时间.apk**
 
 ```Java
 //打包重命名
 applicationVariants.all { variant ->
-    if (variant.buildType.name == "release") {
-        variant.outputs.each { output ->
-            def filePath = output.outputFile.parent + "/${variant.buildType.name}"
-            def fileName = output.outputFile.name
-            if (fileName.endsWith(".apk")) {
-                def apkName = "${variant.productFlavors[0].name}-v${variant.versionName}-${releaseTime()}.apk";
-                output.outputFile = new File(filePath, apkName)
+        if (variant.buildType.name == "release") {
+            variant.outputs.all { output ->
+                def fileName = output.outputFile.name
+                if (fileName.endsWith(".apk")) {
+                    def apkName = "${variant.productFlavors[0].name}-v${variant.versionName}-${releaseTime()}.apk";
+                    outputFileName = apkName
+                }
             }
         }
     }
-}
 ```
 
 ## 渠道自定义
@@ -59,6 +58,8 @@ applicationVariants.all { variant ->
 不同的渠道定义不同的 applicationId, versionCode, versionName
 
 ```Java
+flavorDimensions "test","test1","test2"
+//定义渠道
 productFlavors {
     main_test {
         applicationId "com.jeanboy.app.flavors"
@@ -68,6 +69,7 @@ productFlavors {
         resValue("string", "test_app_id", "2017-8-14 12:09:35")
         //定义混淆文件
         proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test/proguard-rules.pro'
+        dimension "test"
     }
     main_test1 {
         applicationId "com.jeanboy.app.flavorstest1"
@@ -75,6 +77,7 @@ productFlavors {
         versionName rootProject.ext.mainTest1VersionName
         resValue("string", "test_app_id", "2017-8-14 12:09:35")
         proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test1/proguard-rules.pro'
+        dimension "test1"
     }
     main_test2 {
         applicationId "com.jeanboy.app.flavorstest2"
@@ -82,6 +85,7 @@ productFlavors {
         versionName rootProject.ext.mainTest2VersionName
         resValue("string", "test_app_id", "2017-8-14 12:09:35")
         proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test2/proguard-rules.pro'
+        dimension "test2"
     }
 }
 ```
@@ -147,29 +151,29 @@ buildTypes {
 
 例如：不同渠道需要不同的应用名
 
-```Xml
-app
-└──src
-	├──main
-	│	└──res
-	│		└──values
-	│			└──strings.xml
-	│				└──<string name="app_name">Android-Flavors</string>
-	├──main_test
-	│	└──res
-	│		└──values
-	│			└──strings.xml
-	│				└──<string name="app_name">Android-Flavors-test</string>
-	├──main_test1
-	│	└──res
-	│		└──values
-	│			└──strings.xml
-	│				└──<string name="app_name">Android-Flavors-test1</string>
-	├──main_test2
-	│	└──res
-	│		└──values
-	│			└──strings.xml
-	│				└──<string name="app_name">Android-Flavors-test2</string>
+```JSON
+|-app
+    |-src
+        |-main
+        |   |-res
+        |       |-values
+        |           |-strings.xml
+        |               |-<string name="app_name">Android-Flavors</string>
+        |-main_test
+        |   |-res
+        |       |-values
+        |           |-strings.xml
+        |               |-<string name="app_name">Android-Flavors-test</string>
+        |-main_test1
+        |   |-res
+        |       |-values
+        |           |-strings.xml
+        |               |-<string name="app_name">Android-Flavors-test1</string>
+        |-main_test2
+        |   |-res
+        |       |-values
+        |           |-strings.xml
+        |               |-<string name="app_name">Android-Flavors-test2</string>
 ```
 
 在 src 下创建与 main 同级的渠道目录，里面可创建与 main 目录下对应的目录或文件，打包时会以增量或覆盖的方式替换。
@@ -180,7 +184,7 @@ res 目录下的文件可以同名覆盖，java 或其他代码目录中类名�
 - 所有的源码(src/*/java)会用来共同编译生成一个 Apk，不允许覆盖，会提示 duplicate class found
 - 所有的 Manifests 都将会合并，这样一来就允许渠道包中可以定义不同的组件与权限，具体可参考官方 Manifest Merger
 - 渠道中的资源会以覆盖或增量的形式与 main 合并，优先级为 Build Type > Product Flavor > Main sourceSet
-- 每个 Build Variant 都会生成自己的R文件
+- 每个 Build Variant 都会生成自己的 R 文件
 
 
 ## 第三方 SDK
@@ -234,7 +238,7 @@ class MyActivity extends Activity {
 
 或者加入下面的 QQ 群来一起学习交流。
 
-<a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=bbbd62c0860ce7c1a6119030f51df102bb0d3ecc12cf66b4d8887941233c6e78"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Android技术进阶：386463747" title="Android技术进阶：386463747"></a>
+<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=0b505511df9ead28ec678df4eeb7a1a8f994ea8b75f2c10412b57e667d81b50d"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android技术进阶：386463747" title="Android技术进阶：386463747"></a>
 
 ## License
 
@@ -251,3 +255,5 @@ class MyActivity extends Activity {
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
