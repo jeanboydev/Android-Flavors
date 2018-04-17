@@ -5,8 +5,8 @@ static def releaseTime() {
 }
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId getApplicationId()
         versionCode getVersionCode()
@@ -15,6 +15,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true//解决65535
+        flavorDimensions "test","test1","test2"
     }
 
     //定义渠道包签名文件
@@ -68,12 +69,11 @@ android {
     //打包重命名
     applicationVariants.all { variant ->
         if (variant.buildType.name == "release") {
-            variant.outputs.each { output ->
-                def filePath = output.outputFile.parent + "/${variant.buildType.name}"
+            variant.outputs.all { output ->
                 def fileName = output.outputFile.name
                 if (fileName.endsWith(".apk")) {
                     def apkName = "${variant.productFlavors[0].name}-v${variant.versionName}-${releaseTime()}.apk";
-                    output.outputFile = new File(filePath, apkName)
+                    outputFileName = apkName
                 }
             }
         }
@@ -88,6 +88,7 @@ android {
             resValue("string", "test_app_id", "2017-8-14 12:09:35")
             //定义混淆文件
             proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test/proguard-rules.pro'
+            dimension "test"
         }
         main_test1 {
             applicationId "com.jeanboy.app.flavorstest1"
@@ -95,6 +96,7 @@ android {
             versionName rootProject.ext.mainTest1VersionName
             resValue("string", "test_app_id", "2017-8-14 12:09:35")
             proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test1/proguard-rules.pro'
+            dimension "test1"
         }
         main_test2 {
             applicationId "com.jeanboy.app.flavorstest2"
@@ -102,18 +104,19 @@ android {
             versionName rootProject.ext.mainTest2VersionName
             resValue("string", "test_app_id", "2017-8-14 12:09:35")
             proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test2/proguard-rules.pro'
+            dimension "test2"
         }
     }
 
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    testCompile "junit:junit:$rootProject.junitVersion"
-    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.android.support:multidex:1.0.1'//解决65535
+    testImplementation "junit:junit:$rootProject.junitVersion"
+    implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'com.android.support:multidex:1.0.3'//解决65535
 }
