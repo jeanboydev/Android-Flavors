@@ -10,10 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <meta-data
+            android:name="channel_name"
+            android:value="${channelName}"/>
 
         <meta-data
-            android:name="com.jeanboy.app.flavors.AppToken"
-            android:value="@string/test_app_id"/>
+            android:name="flavors_name"
+            android:value="@string/flavors_name"/>
 
         <activity android:name=".MainActivity">
             <intent-filter>

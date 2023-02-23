@@ -1,39 +1,43 @@
-apply plugin: 'com.android.application'
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "kotlin-android-extensions"
+    id "kotlin-kapt"
+}
+
 //定义打包时间
 static def releaseTime() {
     return new Date().format("yyyyMMddHHmmss", TimeZone.getTimeZone("UTC"))
 }
 
 android {
-    buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion 31
+    buildToolsVersion "30.0.3"
+
     defaultConfig {
-        applicationId getApplicationId()
-        versionCode getVersionCode()
-        versionName getVersionName()
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        multiDexEnabled true//解决65535
-        flavorDimensions "test","test1","test2"
+        applicationId "com.jeanboy.app.flavors"
+
+        minSdkVersion 21
+        targetSdkVersion 31
+
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        consumerProguardFiles "consumer-rules.pro"
     }
 
-    //定义渠道包签名文件
+    // 配置签名文件
     signingConfigs {
-        test {
-            storeFile file('../resources/test.jks')//密钥文件位置
-            storePassword 'test123'//密钥密码
-            keyAlias 'test'//密钥别名
-            keyPassword 'test123'//别名密码
+        debug {
+            storeFile file('../resources/test.jks') // 密钥文件位置
+            storePassword 'test123' // 密钥密码
+            keyAlias 'test' // 密钥别名
+            keyPassword 'test123' // 别名密码
         }
-        test1 {
+
+        release {
             storeFile file('../resources/test1.jks')
-            storePassword 'test123'
-            keyAlias 'test'
-            keyPassword 'test123'
-        }
-        test2 {
-            storeFile file('../resources/test2.jks')
             storePassword 'test123'
             keyAlias 'test'
             keyPassword 'test123'
@@ -45,28 +49,110 @@ android {
             minifyEnabled false
             shrinkResources false
             zipAlignEnabled true
-            versionNameSuffix "-debug"//版本命名后缀
+            applicationIdSuffix ".debug" // 自定义 application id 后缀
+            versionNameSuffix "-debug" // 自定义版本名后缀
             buildConfigField "boolean", "LOG_DEBUG", "true"
-            //定义debug时使用的签名文件
-            signingConfig signingConfigs.test
-            signingConfig signingConfigs.test1
-            signingConfig signingConfigs.test2
+
+            signingConfig signingConfigs.debug // 自定义签名文件
         }
 
         release {
-            minifyEnabled true//是否开启代码混淆
-            shrinkResources true//移除无用的资源文件，依赖于minifyEnabled必须一起用
-            multiDexEnabled true//解决65535
-            zipAlignEnabled true//对齐zip
-            debuggable false // 是否debug
+            minifyEnabled true // 是否开启代码混淆
+            shrinkResources true // 移除无用的资源文件，依赖于 minifyEnabled 必须一起用
+            multiDexEnabled true // 解决65535
+            zipAlignEnabled true // 对齐 zip
+            debuggable false // 是否 debug
             buildConfigField "boolean", "LOG_DEBUG", "false"
-            signingConfig signingConfigs.test
-            signingConfig signingConfigs.test1
-            signingConfig signingConfigs.test2
+
+            signingConfig signingConfigs.release
         }
     }
 
-    //打包重命名
+    // 渠道维度
+    flavorDimensions "default"
+    // 渠道配置
+    productFlavors {
+//        googlePlay {
+//            dimension "default"
+//            versionCode 1 // 自定义 version code
+//            versionName "0.0.1" // 自定义 version name
+//            // 自定义 manifest 中替换值，如：渠道号
+//            resValue("string", "channel", "googlePlay")
+//            resValue("string", "test_app_id", "googlePlay")
+//            // 自定义 混淆文件
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_google_play/proguard-rules.pro'
+//        }
+//
+//        local {
+//            dimension "default"
+//            versionCode 10
+//            versionName "1.0.1"
+//            resValue("string", "channel", "local")
+//            resValue("string", "test_app_id", "local")
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_local/proguard-rules.pro'
+//        }
+
+        phone {
+            dimension "default"
+            applicationId "com.jeanboy.app.flavors.phone"
+            // 自定义 buildConfig.java 中的变量供代码中使用
+            buildConfigField "String", "platform", '"phone"'
+            resValue("string", "flavors_name", "phone flavors")
+            manifestPlaceholders = [
+                    channelName : "phone_channel"
+            ]
+        }
+
+        pad {
+            dimension "default"
+            applicationId "com.jeanboy.app.flavors.pad"
+            // 自定义 buildConfig.java 中的变量供代码中使用
+            buildConfigField "String", "platform", '"pad"'
+            resValue("string", "flavors_name", "pad flavors")
+            manifestPlaceholders = [
+                    channelName : "pad_channel"
+            ]
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            resources.srcDirs = ['src/main/java']
+            aidl.srcDirs = ['src/main/java']
+            renderscript.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+            assets.srcDirs = ['src/main/assets']
+            jniLibs.srcDirs = ['libs']
+        }
+
+//        googlePlay {
+//            manifest.srcFile 'src/main_google_play/AndroidManifest.xml'
+//            java.srcDirs = ['src/main_google_play/java']
+//            res.srcDirs = ['src/main_google_play/res']
+//        }
+//
+//        local {
+//            manifest.srcFile 'src/main_local/AndroidManifest.xml'
+//            java.srcDirs = ['src/main_local/java']
+//            res.srcDirs = ['src/main_local/res']
+//        }
+
+        phone {
+            manifest.srcFile 'src/main_phone/AndroidManifest.xml'
+            java.srcDirs = ['src/main_phone/java']
+            res.srcDirs = ['src/main_phone/res']
+        }
+
+        pad {
+            manifest.srcFile 'src/main_pad/AndroidManifest.xml'
+            java.srcDirs = ['src/main_pad/java']
+            res.srcDirs = ['src/main_pad/res']
+        }
+    }
+
+    // 打包重命名
     applicationVariants.all { variant ->
         if (variant.buildType.name == "release") {
             variant.outputs.all { output ->
@@ -78,45 +164,19 @@ android {
             }
         }
     }
-    //定义渠道
-    productFlavors {
-        main_test {
-            applicationId "com.jeanboy.app.flavors"
-            versionCode rootProject.ext.mainTestVersionCode
-            versionName rootProject.ext.mainTestVersionName
-            //定义manifest中替换值，如：渠道号
-            resValue("string", "test_app_id", "2017-8-14 12:09:35")
-            //定义混淆文件
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test/proguard-rules.pro'
-            dimension "test"
-        }
-        main_test1 {
-            applicationId "com.jeanboy.app.flavorstest1"
-            versionCode rootProject.ext.mainTest1VersionCode
-            versionName rootProject.ext.mainTest1VersionName
-            resValue("string", "test_app_id", "2017-8-14 12:09:35")
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test1/proguard-rules.pro'
-            dimension "test1"
-        }
-        main_test2 {
-            applicationId "com.jeanboy.app.flavorstest2"
-            versionCode rootProject.ext.mainTest2VersionCode
-            versionName rootProject.ext.mainTest2VersionName
-            resValue("string", "test_app_id", "2017-8-14 12:09:35")
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), './src/main_test2/proguard-rules.pro'
-            dimension "test2"
-        }
-    }
-
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    testImplementation "junit:junit:$rootProject.junitVersion"
-    implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation 'com.android.support:multidex:1.0.3'//解决65535
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.20"
+//    implementation "androidx.core:core-ktx:$versions.ktxCore"
+//    implementation "androidx.collection:collection-ktx:$versions.ktxCoroutines"
+//    implementation "org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin"
+
+
+    implementation project(':module_test')
 }

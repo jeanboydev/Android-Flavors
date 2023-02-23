@@ -2,11 +2,12 @@
 
 buildscript {
     repositories {
-        jcenter()
         google()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.1'
+        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -15,34 +16,11 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         google()
+        mavenCentral()
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-
-ext {
-    // Sdk and tools
-    minSdkVersion = 16
-    targetSdkVersion = 27
-    compileSdkVersion = 27
-    buildToolsVersion = '27.0.3'
-
-    // App dependencies
-    junitVersion = '4.12'
-    supportLibraryVersion = '27.1.1'
-
-    //Flavors
-    mainTestVersionCode = 1
-    mainTestVersionName = '1.0.1'
-
-    mainTest1VersionCode = 2
-    mainTest1VersionName = '1.0.2'
-
-    mainTest2VersionCode = 3
-    mainTest2VersionName = '1.0.3'
 }
