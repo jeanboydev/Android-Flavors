@@ -1,6 +1,11 @@
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 plugins {
     id 'com.android.library'
 }
+
+apply from: 'maven_push.gradle'
 
 android {
     compileSdkVersion 31
@@ -22,14 +27,17 @@ android {
     }
 
     buildTypes {
+        debug {
+            debuggable true
+        }
         release {
-            minifyEnabled false
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
-    publishNonDefault true
     flavorDimensions "default"
+    publishNonDefault true
     // 渠道配置
     productFlavors {
         phone {
@@ -40,6 +48,17 @@ android {
             dimension "default"
         }
     }
+
+    // 取出当前选择的渠道名
+    def currentFlavor = getCurrentFlavor()
+    println("===>>> currentFlavor: ${currentFlavor}")
+    currentFlavor = currentFlavor.toLowerCase()
+    def isPad = currentFlavor.contains("pad")
+    def isDebug = currentFlavor.contains("debug")
+    def publishFlavor = "${ isPad ? 'pad' : 'phone'}${ isDebug ? 'Debug' : 'Release'}"
+    println("===>>> publishFlavor: ${publishFlavor}")
+    // 取要指定默认发布要使用的 configuration
+    defaultPublishConfig publishFlavor
 
     sourceSets {
         main {
@@ -63,6 +82,23 @@ android {
             res.srcDirs = ['src/main_pad/res']
         }
     }
+}
+
+// 取出当前选择的渠道名
+def getCurrentFlavor() {
+    Gradle gradle = getGradle()
+    String taskName = gradle.getStartParameter().getTaskNames().toString()
+    Pattern pattern
+    if (taskName.contains("assemble")) {
+        pattern = Pattern.compile("assemble(\\w+)((Release|Debug)*)")
+    } else {
+        pattern = Pattern.compile("generate(\\w+)((Release|Debug)*)")
+    }
+    Matcher matcher = pattern.matcher(taskName)
+    if (matcher.find()) {
+        return matcher.group(1)
+    }
+    return ""
 }
 
 dependencies {

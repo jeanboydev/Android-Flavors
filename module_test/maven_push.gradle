@@ -1,0 +1,30 @@
+apply plugin: 'maven' // 用于发布本地 maven 仓库中
+//apply plugin: 'signing'
+
+def groupName = 'com.jeanboy.module.test' // 组名
+def artifactName = 'module_test' // 项目名
+def versionName = "${TEST_AAR_VERSION}" // 版本号
+
+// 上传至本地仓库
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri("../repository"))
+
+            pom.groupId = "${groupName}"
+            pom.artifactId = "${artifactName}"
+            pom.version = "${versionName}"
+        }
+    }
+}
+
+//// 进行数字签名
+//signing {
+//    // 当 发布版本 & 存在 "uploadArchives" 任务时，才执行
+//    required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+//    sign configurations.archives
+//}
+
+
+// ./gradlew :module_test:clean :module_test:assemblePadDebug :module_test:uploadArchives --info
+
